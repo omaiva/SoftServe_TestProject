@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SoftServe_TestProject.Data;
 
-namespace SoftServe_TestProject.Application.Services
+namespace SoftServe_TestProject.Application.ExtensionServices
 {
     public static class DataAccessService
     {

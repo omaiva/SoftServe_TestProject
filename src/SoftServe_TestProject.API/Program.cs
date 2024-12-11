@@ -1,4 +1,5 @@
-using SoftServe_TestProject.Application.Services;
+using SoftServe_TestProject.API.ServicesConfiguration;
+using SoftServe_TestProject.Application.ExtensionServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddServices();
 
 builder.Services.AddDataAccessService(builder.Configuration);
 

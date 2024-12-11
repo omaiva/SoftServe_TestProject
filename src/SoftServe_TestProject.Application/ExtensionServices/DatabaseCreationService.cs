@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SoftServe_TestProject.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace SoftServe_TestProject.Application.Services
+namespace SoftServe_TestProject.Application.ExtensionServices
 {
     public static class DatabaseCreationService
     {
