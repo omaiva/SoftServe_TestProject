@@ -7,7 +7,7 @@ namespace SoftServe_TestProject.Domain.Interfaces
         Task<IEnumerable<Teacher>> GetAllAsync();
         Task<Teacher?> GetByIdAsync(int id);
         Task AddAsync(Teacher student);
-        void Update(Teacher student);
-        void Delete(Teacher student);
+        Task UpdateAsync(Teacher student);
+        Task DeleteAsync(Teacher student);
     }
 }

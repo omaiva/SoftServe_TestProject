@@ -18,9 +18,10 @@ namespace SoftServe_TestProject.Data.Repositories
             await _context.Set<Teacher>().AddAsync(teacher);
         }
 
-        public void Delete(Teacher teacher)
+        public async Task DeleteAsync(Teacher teacher)
         {
             _context.Set<Teacher>().Remove(teacher);
+            await Task.CompletedTask;
         }
 
         public async Task<IEnumerable<Teacher>> GetAllAsync()
@@ -38,9 +39,10 @@ namespace SoftServe_TestProject.Data.Repositories
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
-        public void Update(Teacher teacher)
+        public async Task UpdateAsync(Teacher teacher)
         {
             _context.Set<Teacher>().Update(teacher);
+            await Task.CompletedTask;
         }
     }
 }

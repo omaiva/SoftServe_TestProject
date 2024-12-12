@@ -37,6 +37,12 @@ namespace SoftServe_TestProject.Application.Services
 
         public async Task UpdateCourseAsync(Course course)
         {
+            var existingCourse = await _unitOfWork.Courses.GetByIdAsync(course.Id);
+            if (existingCourse == null)
+            {
+                throw new KeyNotFoundException("Course not found.");
+            }
+
             var teacher = await _unitOfWork.Teachers
                 .GetByIdAsync(course.TeacherId);
             if (teacher == null)
@@ -44,7 +50,7 @@ namespace SoftServe_TestProject.Application.Services
                 throw new ArgumentException("Invalid TeacherId");
             }
 
-            _unitOfWork.Courses.Update(course);
+            await _unitOfWork.Courses.UpdateAsync(course);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -56,7 +62,7 @@ namespace SoftServe_TestProject.Application.Services
                 throw new KeyNotFoundException("Course not found.");
             }
 
-            _unitOfWork.Courses.Delete(course);
+            await _unitOfWork.Courses.DeleteAsync(course);
             await _unitOfWork.SaveChangesAsync();
         }
     }

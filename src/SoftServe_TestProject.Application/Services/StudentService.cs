@@ -30,7 +30,13 @@ namespace SoftServe_TestProject.Application.Services
 
         public async Task UpdateStudentAsync(Student student)
         {
-            _unitOfWork.Students.Update(student);
+            var existingStudent = await _unitOfWork.Students.GetByIdAsync(student.Id);
+            if (existingStudent == null)
+            {
+                throw new KeyNotFoundException("Student not found.");
+            }
+
+            await _unitOfWork.Students.UpdateAsync(student);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -42,7 +48,7 @@ namespace SoftServe_TestProject.Application.Services
                 throw new KeyNotFoundException("Student not found.");
             }
 
-            _unitOfWork.Students.Delete(student);
+            await _unitOfWork.Students.DeleteAsync(student);
             await _unitOfWork.SaveChangesAsync();
         }
     }
