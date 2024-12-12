@@ -10,12 +10,10 @@ namespace SoftServe_TestProject.API.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly CourseService _courseService;
-        private readonly TeacherService _teacherService;
 
-        public CoursesController(CourseService courseService, TeacherService teacherService)
+        public CoursesController(CourseService courseService)
         {
             _courseService = courseService;
-            _teacherService = teacherService;
         }
 
         [HttpGet("{id:int}")]
@@ -41,12 +39,6 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CourseDTO courseDTO)
         {
-            var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
-            if (teacher == null)
-            {
-                return BadRequest();
-            }
-
             var course = new Course()
             {
                 Title = courseDTO.Title,
@@ -62,12 +54,6 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, CourseDTO courseDTO)
         {
-            var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
-            if (teacher == null)
-            {
-                return BadRequest();
-            }
-
             var course = new Course()
             {
                 Title = courseDTO.Title,

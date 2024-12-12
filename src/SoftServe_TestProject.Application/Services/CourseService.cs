@@ -1,44 +1,63 @@
 ﻿using SoftServe_TestProject.Domain.Entities;
-using SoftServe_TestProject.Domain.Repositories;
+using SoftServe_TestProject.Domain.Interfaces;
 
 namespace SoftServe_TestProject.Application.Services
 {
     public class CourseService
     {
-        private readonly ICourseRepository _courseRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CourseService(ICourseRepository courseRepository)
+        public CourseService(IUnitOfWork unitOfWork)
         {
-            _courseRepository = courseRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Course> GetCourseByIdAsync(int id)
         {
-            return await _courseRepository.GetByIdAsync(id);
+            return await _unitOfWork.Courses.GetByIdAsync(id);
         }
 
         public async Task<IEnumerable<Course>> GetAllCoursesAsync()
         {
-            return await _courseRepository.GetAllAsync();
+            return await _unitOfWork.Courses.GetAllAsync();
         }
 
         public async Task CreateCourseAsync(Course course)
         {
-            await _courseRepository.AddAsync(course);
+            var teacher = await _unitOfWork.Teachers
+                .GetByIdAsync(course.TeacherId);
+            if (teacher == null)
+            {
+                throw new ArgumentException("Invalid TeacherId");
+            }
+
+            await _unitOfWork.Courses.AddAsync(course);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task UpdateCourseAsync(Course course)
         {
-            await _courseRepository.UpdateAsync(course);
+            var teacher = await _unitOfWork.Teachers
+                .GetByIdAsync(course.TeacherId);
+            if (teacher == null)
+            {
+                throw new ArgumentException("Invalid TeacherId");
+            }
+
+            _unitOfWork.Courses.Update(course);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteCourseAsync(int id)
         {
-            var course = await _courseRepository.GetByIdAsync(id);
-            if (course != null)
+            var course = await _unitOfWork.Courses.GetByIdAsync(id);
+            if (course == null)
             {
-                await _courseRepository.DeleteAsync(course);
+                throw new KeyNotFoundException("Course not found.");
             }
+
+            _unitOfWork.Courses.Delete(course);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

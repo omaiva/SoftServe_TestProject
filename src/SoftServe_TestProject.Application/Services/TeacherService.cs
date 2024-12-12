@@ -1,44 +1,49 @@
 ﻿using SoftServe_TestProject.Domain.Entities;
-using SoftServe_TestProject.Domain.Repositories;
+using SoftServe_TestProject.Domain.Interfaces;
 
 namespace SoftServe_TestProject.Application.Services
 {
     public class TeacherService
     {
-        private readonly ITeacherRepository _teacherRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public TeacherService(ITeacherRepository teacherRepository)
+        public TeacherService(IUnitOfWork unitOfWork)
         {
-            _teacherRepository = teacherRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Teacher> GetTeacherByIdAsync(int id)
         {
-            return await _teacherRepository.GetByIdAsync(id);
+            return await _unitOfWork.Teachers.GetByIdAsync(id);
         }
 
         public async Task<IEnumerable<Teacher>> GetAllTeachersAsync()
         {
-            return await _teacherRepository.GetAllAsync();
+            return await _unitOfWork.Teachers.GetAllAsync();
         }
 
         public async Task CreateTeacherAsync(Teacher teacher)
         {
-            await _teacherRepository.AddAsync(teacher);
+            await _unitOfWork.Teachers.AddAsync(teacher);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task UpdateTeacherAsync(Teacher teacher)
         {
-            await _teacherRepository.UpdateAsync(teacher);
+            _unitOfWork.Teachers.Update(teacher);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteTeacherAsync(int id)
         {
-            var teacher = await _teacherRepository.GetByIdAsync(id);
-            if (teacher != null)
+            var teacher = await _unitOfWork.Teachers.GetByIdAsync(id);
+            if (teacher == null)
             {
-                await _teacherRepository.DeleteAsync(teacher);
+                throw new KeyNotFoundException("Teacher not found.");
             }
+
+            _unitOfWork.Teachers.Delete(teacher);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }
