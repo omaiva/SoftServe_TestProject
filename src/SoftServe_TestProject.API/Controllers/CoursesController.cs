@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
+using SoftServe_TestProject.API.Validators;
 using SoftServe_TestProject.Application.Services;
 using SoftServe_TestProject.Domain.Entities;
 
@@ -10,10 +12,12 @@ namespace SoftServe_TestProject.API.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly CourseService _courseService;
+        private readonly IValidator<CourseDTO> _courseValidator;
 
-        public CoursesController(CourseService courseService)
+        public CoursesController(CourseService courseService, IValidator<CourseDTO> courseValidator)
         {
             _courseService = courseService;
+            _courseValidator = courseValidator;
         }
 
         [HttpGet("{id:int}")]
@@ -22,7 +26,7 @@ namespace SoftServe_TestProject.API.Controllers
             var course = await _courseService.GetCourseByIdAsync(id);
             if (course == null)
             {
-                return NotFound();
+                return NotFound("Course not found.");
             }
 
             return Ok(course);
@@ -39,11 +43,17 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CourseDTO courseDTO)
         {
+            var validationResult = await _courseValidator.ValidateAsync(courseDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var course = new Course()
             {
                 Title = courseDTO.Title,
                 Description = courseDTO.Description,
-                TeacherId = courseDTO.TeacherId
+                TeacherId = courseDTO.TeacherId 
             };
 
             await _courseService.CreateCourseAsync(course);
@@ -54,6 +64,12 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, CourseDTO courseDTO)
         {
+            var validationResult = await _courseValidator.ValidateAsync(courseDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var course = new Course()
             {
                 Title = courseDTO.Title,

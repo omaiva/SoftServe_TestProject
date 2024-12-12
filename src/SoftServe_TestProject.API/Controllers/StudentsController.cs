@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
 using SoftServe_TestProject.Application.Services;
 using SoftServe_TestProject.Domain.Entities;
@@ -10,10 +11,12 @@ namespace SoftServe_TestProject.API.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly StudentService _studentService;
+        private readonly IValidator<StudentDTO> _studentValidator;
 
-        public StudentsController(StudentService studentService)
+        public StudentsController(StudentService studentService, IValidator<StudentDTO> studentValidator)
         {
             _studentService = studentService;
+            _studentValidator = studentValidator;
         }
 
         [HttpGet("{id:int}")]
@@ -22,7 +25,7 @@ namespace SoftServe_TestProject.API.Controllers
             var student = await _studentService.GetStudentByIdAsync(id);
             if (student == null)
             {
-                return NotFound();
+                return NotFound("Student not found.");
             }
 
             return Ok(student);
@@ -39,6 +42,12 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(StudentDTO studentDTO)
         {
+            var validationResult = await _studentValidator.ValidateAsync(studentDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var student = new Student()
             {
                 FirstName = studentDTO.FirstName,
@@ -53,6 +62,12 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, StudentDTO studentDTO)
         {
+            var validationResult = await _studentValidator.ValidateAsync(studentDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var student = new Student()
             {
                 Id = id,

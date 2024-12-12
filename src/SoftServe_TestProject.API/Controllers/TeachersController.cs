@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
 using SoftServe_TestProject.Application.Services;
 using SoftServe_TestProject.Domain.Entities;
@@ -10,10 +11,12 @@ namespace SoftServe_TestProject.API.Controllers
     public class TeachersController : ControllerBase
     {
         private readonly TeacherService _teacherService;
+        private readonly IValidator<TeacherDTO> _teacherValidator;
 
-        public TeachersController(TeacherService teacherService)
+        public TeachersController(TeacherService teacherService, IValidator<TeacherDTO> teacherValidator)
         {
             _teacherService = teacherService;
+            _teacherValidator = teacherValidator;
         }
 
         [HttpGet("{id:int}")]
@@ -22,7 +25,7 @@ namespace SoftServe_TestProject.API.Controllers
             var teacher = await _teacherService.GetTeacherByIdAsync(id);
             if (teacher == null)
             {
-                return NotFound();
+                return NotFound("Teacher not found");
             }
 
             return Ok(teacher);
@@ -39,6 +42,12 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(TeacherDTO teacherDTO)
         {
+            var validationResult = await _teacherValidator.ValidateAsync(teacherDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var teacher = new Teacher()
             {
                 FirstName = teacherDTO.FirstName,
@@ -53,6 +62,12 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, TeacherDTO teacherDTO)
         {
+            var validationResult = await _teacherValidator.ValidateAsync(teacherDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var teacher = new Teacher()
             {
                 FirstName = teacherDTO.FirstName,
