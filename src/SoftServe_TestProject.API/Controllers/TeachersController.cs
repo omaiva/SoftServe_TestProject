@@ -39,47 +39,48 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(TeacherDTO teacherDTO)
         {
-            if (ModelState.IsValid)
+            var teacher = new Teacher()
             {
-                var teacher = new Teacher()
-                {
-                    FirstName = teacherDTO.FirstName,
-                    LastName = teacherDTO.LastName
-                };
+                FirstName = teacherDTO.FirstName,
+                LastName = teacherDTO.LastName
+            };
 
-                await _teacherService.CreateTeacherAsync(teacher);
+            await _teacherService.CreateTeacherAsync(teacher);
 
-                return Ok(teacher);
-            }
-
-            return BadRequest();
+            return CreatedAtAction(nameof(GetById), new { Id = teacher.Id }, teacher);
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, TeacherDTO teacherDTO)
         {
-            if (ModelState.IsValid)
+            var teacher = new Teacher()
             {
-                var teacher = new Teacher()
-                {
-                    FirstName = teacherDTO.FirstName,
-                    LastName = teacherDTO.LastName
-                };
+                FirstName = teacherDTO.FirstName,
+                LastName = teacherDTO.LastName
+            };
 
-                await _teacherService.UpdateTeacherAsync(teacher);
+            await _teacherService.UpdateTeacherAsync(teacher);
 
-                return Ok(teacher);
-            }
-
-            return BadRequest();
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _teacherService.DeleteTeacherAsync(id);
+            try
+            {
+                await _teacherService.DeleteTeacherAsync(id);
 
-            return Ok();
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Teacher not found.");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Something went wrong.");
+            }
         }
     }
 }

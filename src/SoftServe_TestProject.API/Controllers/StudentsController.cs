@@ -39,48 +39,49 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(StudentDTO studentDTO)
         {
-            if (ModelState.IsValid)
+            var student = new Student()
             {
-                var student = new Student()
-                {
-                    FirstName = studentDTO.FirstName,
-                    LastName = studentDTO.LastName
-                };
+                FirstName = studentDTO.FirstName,
+                LastName = studentDTO.LastName
+            };
 
-                await _studentService.CreateStudentAsync(student);
+            await _studentService.CreateStudentAsync(student);
 
-                return Ok(student);
-            }
-
-            return BadRequest();
+            return CreatedAtAction(nameof(GetById), new { Id = student.Id}, student);
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, StudentDTO studentDTO)
         {
-            if (ModelState.IsValid)
+            var student = new Student()
             {
-                var student = new Student()
-                {
-                    Id = id,
-                    FirstName = studentDTO.FirstName,
-                    LastName = studentDTO.LastName
-                };
+                Id = id,
+                FirstName = studentDTO.FirstName,
+                LastName = studentDTO.LastName
+            };
 
-                await _studentService.UpdateStudentAsync(student);
+            await _studentService.UpdateStudentAsync(student);
 
-                return Ok(student);
-            }
-
-            return BadRequest();
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _studentService.DeleteStudentAsync(id);
+            try
+            {
+                await _studentService.DeleteStudentAsync(id);
 
-            return Ok();
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Student not found.");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Something went wrong.");
+            }
         }
     }
 }

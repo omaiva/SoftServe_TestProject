@@ -41,61 +41,62 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CourseDTO courseDTO)
         {
-            if (ModelState.IsValid)
+            var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
+            if (teacher == null)
             {
-                var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
-                if (teacher == null)
-                {
-                    return BadRequest();
-                }
-
-                var course = new Course()
-                {
-                    Title = courseDTO.Title,
-                    Description = courseDTO.Description,
-                    TeacherId = courseDTO.TeacherId
-                };
-
-                await _courseService.CreateCourseAsync(course);
-
-                return Ok(course);
+                return BadRequest();
             }
 
-            return BadRequest();
+            var course = new Course()
+            {
+                Title = courseDTO.Title,
+                Description = courseDTO.Description,
+                TeacherId = courseDTO.TeacherId
+            };
+
+            await _courseService.CreateCourseAsync(course);
+
+            return CreatedAtAction(nameof(GetById), new { Id = course.Id }, course);
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, CourseDTO courseDTO)
         {
-            if (ModelState.IsValid)
+            var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
+            if (teacher == null)
             {
-                var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
-                if (teacher == null)
-                {
-                    return BadRequest();
-                }
-
-                var course = new Course()
-                {
-                    Title = courseDTO.Title,
-                    Description = courseDTO.Description,
-                    TeacherId = courseDTO.TeacherId
-                };
-
-                await _courseService.UpdateCourseAsync(course);
-
-                return Ok(course);
+                return BadRequest();
             }
 
-            return BadRequest();
+            var course = new Course()
+            {
+                Title = courseDTO.Title,
+                Description = courseDTO.Description,
+                TeacherId = courseDTO.TeacherId
+            };
+
+            await _courseService.UpdateCourseAsync(course);
+
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _courseService.DeleteCourseAsync(id);
+            try
+            {
+                await _courseService.DeleteCourseAsync(id);
 
-            return Ok();
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound("Course not found.");
+            }
+            catch (Exception)
+            {
+                return BadRequest("Something went wrong.");
+            }
         }
     }
 }
