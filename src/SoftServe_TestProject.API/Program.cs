@@ -1,3 +1,4 @@
+using SoftServe_TestProject.API.Middleware;
 using SoftServe_TestProject.API.ServicesConfiguration;
 using SoftServe_TestProject.Application.ExtensionServices;
 
@@ -11,8 +12,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddServices();
-
+builder.Services.AddValidators();
 builder.Services.AddDataAccessService(builder.Configuration);
+builder.Services.AddMappingProfiles();
+builder.Services.AddMappingProfilesOfRequests();
 
 var app = builder.Build();
 
@@ -24,6 +27,8 @@ if (app.Environment.IsDevelopment())
 
     await app.DatabaseEnsureCreated();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

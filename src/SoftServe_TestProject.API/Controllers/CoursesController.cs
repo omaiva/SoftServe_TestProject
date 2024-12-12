@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
+using SoftServe_TestProject.API.Responses;
+using SoftServe_TestProject.Application.Requests;
 using SoftServe_TestProject.Application.Services;
-using SoftServe_TestProject.Domain.Entities;
 
 namespace SoftServe_TestProject.API.Controllers
 {
@@ -10,12 +13,14 @@ namespace SoftServe_TestProject.API.Controllers
     public class CoursesController : ControllerBase
     {
         private readonly CourseService _courseService;
-        private readonly TeacherService _teacherService;
+        private readonly IValidator<CourseDTO> _courseValidator;
+        private readonly IMapper _mapper;
 
-        public CoursesController(CourseService courseService, TeacherService teacherService)
+        public CoursesController(CourseService courseService, IValidator<CourseDTO> courseValidator, IMapper mapper)
         {
             _courseService = courseService;
-            _teacherService = teacherService;
+            _courseValidator = courseValidator;
+            _mapper = mapper;
         }
 
         [HttpGet("{id:int}")]
@@ -24,10 +29,12 @@ namespace SoftServe_TestProject.API.Controllers
             var course = await _courseService.GetCourseByIdAsync(id);
             if (course == null)
             {
-                return NotFound();
+                return NotFound("Course not found.");
             }
 
-            return Ok(course);
+            var courseResponse = _mapper.Map<CourseResponse>(course);
+
+            return Ok(courseResponse);
         }
 
         [HttpGet]
@@ -35,59 +42,44 @@ namespace SoftServe_TestProject.API.Controllers
         {
             var courses = await _courseService.GetAllCoursesAsync();
 
-            return Ok(courses);
+            var courseResponses = _mapper.Map<IEnumerable<CourseResponse>>(courses);
+
+            return Ok(courseResponses);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CourseDTO courseDTO)
         {
-            if (ModelState.IsValid)
+            var validationResult = await _courseValidator.ValidateAsync(courseDTO);
+            if (!validationResult.IsValid)
             {
-                var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
-                if (teacher == null)
-                {
-                    return BadRequest();
-                }
-
-                var course = new Course()
-                {
-                    Title = courseDTO.Title,
-                    Description = courseDTO.Description,
-                    TeacherId = courseDTO.TeacherId
-                };
-
-                await _courseService.CreateCourseAsync(course);
-
-                return Ok(course);
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
-            return BadRequest();
+            var course = _mapper.Map<CourseRequest>(courseDTO);
+            await _courseService.CreateCourseAsync(course);
+
+            return NoContent();
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, CourseDTO courseDTO)
         {
-            if (ModelState.IsValid)
+            if (id != courseDTO.Id)
             {
-                var teacher = await _teacherService.GetTeacherByIdAsync(courseDTO.TeacherId);
-                if (teacher == null)
-                {
-                    return BadRequest();
-                }
-
-                var course = new Course()
-                {
-                    Title = courseDTO.Title,
-                    Description = courseDTO.Description,
-                    TeacherId = courseDTO.TeacherId
-                };
-
-                await _courseService.UpdateCourseAsync(course);
-
-                return Ok(course);
+                return BadRequest(new { Error = "Id and course Id are different." });
             }
 
-            return BadRequest();
+            var validationResult = await _courseValidator.ValidateAsync(courseDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
+            var course = _mapper.Map<CourseRequest>(courseDTO);
+            await _courseService.UpdateCourseAsync(course);
+
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
@@ -95,7 +87,7 @@ namespace SoftServe_TestProject.API.Controllers
         {
             await _courseService.DeleteCourseAsync(id);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

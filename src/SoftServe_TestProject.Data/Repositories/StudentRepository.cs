@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SoftServe_TestProject.Domain.Entities;
-using SoftServe_TestProject.Domain.Repositories;
+using SoftServe_TestProject.Domain.Interfaces;
 
 namespace SoftServe_TestProject.Data.Repositories
 {
@@ -16,13 +16,12 @@ namespace SoftServe_TestProject.Data.Repositories
         public async Task AddAsync(Student student)
         {
             await _context.Set<Student>().AddAsync(student);
-            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Student student)
         {
-            _context.Remove(student);
-            await _context.SaveChangesAsync();
+            _context.Set<Student>().Remove(student);
+            await Task.CompletedTask;
         }
 
         public async Task<IEnumerable<Student>> GetAllAsync()
@@ -33,17 +32,18 @@ namespace SoftServe_TestProject.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Student> GetByIdAsync(int id)
+        public async Task<Student?> GetByIdAsync(int id)
         {
             return await _context
                 .Set<Student>()
-                .FindAsync(id);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == id);
         }
 
         public async Task UpdateAsync(Student student)
         {
             _context.Set<Student>().Update(student);
-            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
         }
     }
 }

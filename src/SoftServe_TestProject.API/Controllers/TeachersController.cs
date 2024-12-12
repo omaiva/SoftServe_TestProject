@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
+using SoftServe_TestProject.API.Responses;
+using SoftServe_TestProject.Application.Requests;
 using SoftServe_TestProject.Application.Services;
-using SoftServe_TestProject.Domain.Entities;
 
 namespace SoftServe_TestProject.API.Controllers
 {
@@ -10,10 +13,14 @@ namespace SoftServe_TestProject.API.Controllers
     public class TeachersController : ControllerBase
     {
         private readonly TeacherService _teacherService;
+        private readonly IValidator<TeacherDTO> _teacherValidator;
+        private readonly IMapper _mapper;
 
-        public TeachersController(TeacherService teacherService)
+        public TeachersController(TeacherService teacherService, IValidator<TeacherDTO> teacherValidator, IMapper mapper)
         {
             _teacherService = teacherService;
+            _teacherValidator = teacherValidator;
+            _mapper = mapper;
         }
 
         [HttpGet("{id:int}")]
@@ -22,10 +29,12 @@ namespace SoftServe_TestProject.API.Controllers
             var teacher = await _teacherService.GetTeacherByIdAsync(id);
             if (teacher == null)
             {
-                return NotFound();
+                return NotFound("Teacher not found");
             }
 
-            return Ok(teacher);
+            var teacherResponse = _mapper.Map<TeacherResponse>(teacher);
+
+            return Ok(teacherResponse);
         }
 
         [HttpGet]
@@ -33,45 +42,44 @@ namespace SoftServe_TestProject.API.Controllers
         {
             var teachers = await _teacherService.GetAllTeachersAsync();
 
-            return Ok(teachers);
+            var teacherResponses = _mapper.Map<IEnumerable<TeacherResponse>>(teachers);
+
+            return Ok(teacherResponses);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(TeacherDTO teacherDTO)
         {
-            if (ModelState.IsValid)
+            var validationResult = await _teacherValidator.ValidateAsync(teacherDTO);
+            if (!validationResult.IsValid)
             {
-                var teacher = new Teacher()
-                {
-                    FirstName = teacherDTO.FirstName,
-                    LastName = teacherDTO.LastName
-                };
-
-                await _teacherService.CreateTeacherAsync(teacher);
-
-                return Ok(teacher);
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
-            return BadRequest();
+            var teacher = _mapper.Map<TeacherRequest>(teacherDTO);
+            await _teacherService.CreateTeacherAsync(teacher);
+
+            return NoContent();
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, TeacherDTO teacherDTO)
         {
-            if (ModelState.IsValid)
+            if (id != teacherDTO.Id)
             {
-                var teacher = new Teacher()
-                {
-                    FirstName = teacherDTO.FirstName,
-                    LastName = teacherDTO.LastName
-                };
-
-                await _teacherService.UpdateTeacherAsync(teacher);
-
-                return Ok(teacher);
+                return BadRequest(new { Error = "Id and teacher Id are different." });
             }
 
-            return BadRequest();
+            var validationResult = await _teacherValidator.ValidateAsync(teacherDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
+            var teacher = _mapper.Map<TeacherRequest>(teacherDTO);
+            await _teacherService.UpdateTeacherAsync(teacher);
+
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
@@ -79,7 +87,7 @@ namespace SoftServe_TestProject.API.Controllers
         {
             await _teacherService.DeleteTeacherAsync(id);
 
-            return Ok();
+            return NoContent();
         }
     }
 }

@@ -1,44 +1,80 @@
-﻿using SoftServe_TestProject.Domain.Entities;
-using SoftServe_TestProject.Domain.Repositories;
+﻿using AutoMapper;
+using SoftServe_TestProject.Application.Requests;
+using SoftServe_TestProject.Domain.Entities;
+using SoftServe_TestProject.Domain.Interfaces;
 
 namespace SoftServe_TestProject.Application.Services
 {
     public class CourseService
     {
-        private readonly ICourseRepository _courseRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CourseService(ICourseRepository courseRepository)
+        public CourseService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _courseRepository = courseRepository;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
-        public async Task<Course> GetCourseByIdAsync(int id)
+        public async Task<CourseRequest?> GetCourseByIdAsync(int id)
         {
-            return await _courseRepository.GetByIdAsync(id);
+            var course = await _unitOfWork.Courses.GetByIdAsync(id);
+
+            return course == null ? null : _mapper.Map<CourseRequest>(course);
         }
 
-        public async Task<IEnumerable<Course>> GetAllCoursesAsync()
+        public async Task<IEnumerable<CourseRequest>> GetAllCoursesAsync()
         {
-            return await _courseRepository.GetAllAsync();
+            var courses =  await _unitOfWork.Courses.GetAllAsync();
+            return _mapper.Map<IEnumerable<CourseRequest>>(courses);
         }
 
-        public async Task CreateCourseAsync(Course course)
+        public async Task CreateCourseAsync(CourseRequest courseRequest)
         {
-            await _courseRepository.AddAsync(course);
+            var teacher = await _unitOfWork.Teachers
+                .GetByIdAsync(courseRequest.TeacherId);
+            if (teacher == null)
+            {
+                throw new ArgumentException("Invalid TeacherId");
+            }
+
+            var course = _mapper.Map<Course>(courseRequest);
+
+            await _unitOfWork.Courses.AddAsync(course);
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateCourseAsync(Course course)
+        public async Task UpdateCourseAsync(CourseRequest courseRequest)
         {
-            await _courseRepository.UpdateAsync(course);
+            var existingCourse = await _unitOfWork.Courses.GetByIdAsync(courseRequest.Id);
+            if (existingCourse == null)
+            {
+                throw new KeyNotFoundException("Course not found.");
+            }
+
+            var teacher = await _unitOfWork.Teachers
+                .GetByIdAsync(courseRequest.TeacherId);
+            if (teacher == null)
+            {
+                throw new ArgumentException("Invalid TeacherId");
+            }
+
+            var course = _mapper.Map<Course>(courseRequest);
+
+            await _unitOfWork.Courses.UpdateAsync(course);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteCourseAsync(int id)
         {
-            var course = await _courseRepository.GetByIdAsync(id);
-            if (course != null)
+            var course = await _unitOfWork.Courses.GetByIdAsync(id);
+            if (course == null)
             {
-                await _courseRepository.DeleteAsync(course);
+                throw new KeyNotFoundException("Course not found.");
             }
+
+            await _unitOfWork.Courses.DeleteAsync(course);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

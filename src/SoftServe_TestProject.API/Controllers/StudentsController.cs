@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
+using SoftServe_TestProject.API.Responses;
+using SoftServe_TestProject.Application.Requests;
 using SoftServe_TestProject.Application.Services;
-using SoftServe_TestProject.Domain.Entities;
 
 namespace SoftServe_TestProject.API.Controllers
 {
@@ -10,10 +13,14 @@ namespace SoftServe_TestProject.API.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly StudentService _studentService;
+        private readonly IValidator<StudentDTO> _studentValidator;
+        private readonly IMapper _mapper;
 
-        public StudentsController(StudentService studentService)
+        public StudentsController(StudentService studentService, IValidator<StudentDTO> studentValidator, IMapper mapper)
         {
             _studentService = studentService;
+            _studentValidator = studentValidator;
+            _mapper = mapper;
         }
 
         [HttpGet("{id:int}")]
@@ -22,10 +29,12 @@ namespace SoftServe_TestProject.API.Controllers
             var student = await _studentService.GetStudentByIdAsync(id);
             if (student == null)
             {
-                return NotFound();
+                return NotFound("Student not found.");
             }
 
-            return Ok(student);
+            var studentResponse = _mapper.Map<StudentResponse>(student);
+
+            return Ok(studentResponse);
         }
 
         [HttpGet]
@@ -33,46 +42,45 @@ namespace SoftServe_TestProject.API.Controllers
         {
             var students = await _studentService.GetAllStudentsAsync();
 
-            return Ok(students);
+            var studentsResponses = _mapper.Map<IEnumerable<StudentResponse>>(students);
+
+            return Ok(studentsResponses);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(StudentDTO studentDTO)
         {
-            if (ModelState.IsValid)
+            var validationResult = await _studentValidator.ValidateAsync(studentDTO);
+            if (!validationResult.IsValid)
             {
-                var student = new Student()
-                {
-                    FirstName = studentDTO.FirstName,
-                    LastName = studentDTO.LastName
-                };
-
-                await _studentService.CreateStudentAsync(student);
-
-                return Ok(student);
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
-            return BadRequest();
+            var student = _mapper.Map<StudentRequest>(studentDTO);
+            await _studentService.CreateStudentAsync(student);
+
+            return NoContent();
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, StudentDTO studentDTO)
         {
-            if (ModelState.IsValid)
+            if (id != studentDTO.Id)
             {
-                var student = new Student()
-                {
-                    Id = id,
-                    FirstName = studentDTO.FirstName,
-                    LastName = studentDTO.LastName
-                };
-
-                await _studentService.UpdateStudentAsync(student);
-
-                return Ok(student);
+                return BadRequest(new { Error = "Id and student Id are different." });
             }
 
-            return BadRequest();
+            var validationResult = await _studentValidator.ValidateAsync(studentDTO);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
+            var student = _mapper.Map<StudentRequest>(studentDTO);
+
+            await _studentService.UpdateStudentAsync(student);
+
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
@@ -80,7 +88,7 @@ namespace SoftServe_TestProject.API.Controllers
         {
             await _studentService.DeleteStudentAsync(id);
 
-            return Ok();
+            return NoContent();
         }
     }
 }
