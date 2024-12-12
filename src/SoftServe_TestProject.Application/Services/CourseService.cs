@@ -12,7 +12,7 @@ namespace SoftServe_TestProject.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Course> GetCourseByIdAsync(int id)
+        public async Task<Course?> GetCourseByIdAsync(int id)
         {
             return await _unitOfWork.Courses.GetByIdAsync(id);
         }

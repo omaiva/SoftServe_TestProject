@@ -82,20 +82,9 @@ namespace SoftServe_TestProject.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                await _teacherService.DeleteTeacherAsync(id);
+            await _teacherService.DeleteTeacherAsync(id);
 
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound("Teacher not found.");
-            }
-            catch (Exception)
-            {
-                return BadRequest("Something went wrong.");
-            }
+            return NoContent();
         }
     }
 }

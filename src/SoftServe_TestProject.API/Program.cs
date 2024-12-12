@@ -1,3 +1,4 @@
+using SoftServe_TestProject.API.Middleware;
 using SoftServe_TestProject.API.ServicesConfiguration;
 using SoftServe_TestProject.Application.ExtensionServices;
 
@@ -24,6 +25,8 @@ if (app.Environment.IsDevelopment())
 
     await app.DatabaseEnsureCreated();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

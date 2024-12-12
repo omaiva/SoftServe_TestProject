@@ -21,8 +21,4 @@
     <ProjectReference Include="..\SoftServe_TestProject.Application\SoftServe_TestProject.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ResponseDTOs\" />
-  </ItemGroup>
-
 </Project>
