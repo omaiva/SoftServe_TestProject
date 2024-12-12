@@ -12,8 +12,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddServices();
-
+builder.Services.AddValidators();
 builder.Services.AddDataAccessService(builder.Configuration);
+builder.Services.AddMappingProfiles();
+builder.Services.AddMappingProfilesOfRequests();
 
 var app = builder.Build();
 

@@ -1,8 +1,10 @@
-﻿using FluentValidation;
+﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
+using SoftServe_TestProject.API.Responses;
+using SoftServe_TestProject.Application.Requests;
 using SoftServe_TestProject.Application.Services;
-using SoftServe_TestProject.Domain.Entities;
 
 namespace SoftServe_TestProject.API.Controllers
 {
@@ -12,11 +14,13 @@ namespace SoftServe_TestProject.API.Controllers
     {
         private readonly StudentService _studentService;
         private readonly IValidator<StudentDTO> _studentValidator;
+        private readonly IMapper _mapper;
 
-        public StudentsController(StudentService studentService, IValidator<StudentDTO> studentValidator)
+        public StudentsController(StudentService studentService, IValidator<StudentDTO> studentValidator, IMapper mapper)
         {
             _studentService = studentService;
             _studentValidator = studentValidator;
+            _mapper = mapper;
         }
 
         [HttpGet("{id:int}")]
@@ -28,7 +32,9 @@ namespace SoftServe_TestProject.API.Controllers
                 return NotFound("Student not found.");
             }
 
-            return Ok(student);
+            var studentResponse = _mapper.Map<StudentResponse>(student);
+
+            return Ok(studentResponse);
         }
 
         [HttpGet]
@@ -36,7 +42,9 @@ namespace SoftServe_TestProject.API.Controllers
         {
             var students = await _studentService.GetAllStudentsAsync();
 
-            return Ok(students);
+            var studentsResponses = _mapper.Map<IEnumerable<StudentResponse>>(students);
+
+            return Ok(studentsResponses);
         }
 
         [HttpPost]
@@ -48,32 +56,27 @@ namespace SoftServe_TestProject.API.Controllers
                 return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
-            var student = new Student()
-            {
-                FirstName = studentDTO.FirstName,
-                LastName = studentDTO.LastName
-            };
-
+            var student = _mapper.Map<StudentRequest>(studentDTO);
             await _studentService.CreateStudentAsync(student);
 
-            return CreatedAtAction(nameof(GetById), new { Id = student.Id}, student);
+            return NoContent();
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, StudentDTO studentDTO)
         {
+            if (id != studentDTO.Id)
+            {
+                return BadRequest(new { Error = "Id and student Id are different." });
+            }
+
             var validationResult = await _studentValidator.ValidateAsync(studentDTO);
             if (!validationResult.IsValid)
             {
                 return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
-            var student = new Student()
-            {
-                Id = id,
-                FirstName = studentDTO.FirstName,
-                LastName = studentDTO.LastName
-            };
+            var student = _mapper.Map<StudentRequest>(studentDTO);
 
             await _studentService.UpdateStudentAsync(student);
 

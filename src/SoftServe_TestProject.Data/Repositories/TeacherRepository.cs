@@ -36,6 +36,7 @@ namespace SoftServe_TestProject.Data.Repositories
         {
             return await _context
                 .Set<Teacher>()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 

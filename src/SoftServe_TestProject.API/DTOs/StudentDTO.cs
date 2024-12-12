@@ -1,4 +1,4 @@
 ﻿namespace SoftServe_TestProject.API.DTOs
 {
-    public record StudentDTO(string FirstName, string LastName) { }
+    public record StudentDTO(int Id, string FirstName, string LastName) { }
 }
