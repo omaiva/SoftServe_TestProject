@@ -4,7 +4,7 @@ using SoftServe_TestProject.Domain.Repositories;
 
 namespace SoftServe_TestProject.Data.Repositories
 {
-    internal class TeacherRepository : ITeacherRepository
+    public class TeacherRepository : ITeacherRepository
     {
         private readonly ProjectContext _context;
 
