@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using SoftServe_TestProject.API.MappingProfiles;
 using SoftServe_TestProject.API.Validators;
+using SoftServe_TestProject.Application.Interfaces;
 using SoftServe_TestProject.Application.Services;
 using SoftServe_TestProject.Data.Repositories;
 using SoftServe_TestProject.Domain.Interfaces;
@@ -15,9 +16,9 @@ namespace SoftServe_TestProject.API.ServicesConfiguration
             services.AddScoped<IStudentRepository, StudentRepository>();
             services.AddScoped<ITeacherRepository, TeacherRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
-            services.AddScoped<StudentService>();
-            services.AddScoped<TeacherService>();
-            services.AddScoped<CourseService>();    
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<ITeacherService, TeacherService>();
+            services.AddScoped<ICourseService, CourseService>();    
 
             return services;
         }

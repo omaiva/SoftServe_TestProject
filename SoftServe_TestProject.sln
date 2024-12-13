@@ -9,9 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftServe_TestProject.Domai
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftServe_TestProject.Data", "src\SoftServe_TestProject.Data\SoftServe_TestProject.Data.csproj", "{2211A28F-A5BC-4602-92B5-42C03C141DD8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftServe_TestProject.API", "src\SoftServe_TestProject.API\SoftServe_TestProject.API.csproj", "{ADB08B90-1675-4438-AEDD-5C6E9EAB013B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftServe_TestProject.API", "src\SoftServe_TestProject.API\SoftServe_TestProject.API.csproj", "{ADB08B90-1675-4438-AEDD-5C6E9EAB013B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftServe_TestProject.Application", "src\SoftServe_TestProject.Application\SoftServe_TestProject.Application.csproj", "{55F0052E-19CC-4CB5-AB5D-AB55FF753F66}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftServe_TestProject.Application", "src\SoftServe_TestProject.Application\SoftServe_TestProject.Application.csproj", "{55F0052E-19CC-4CB5-AB5D-AB55FF753F66}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D0831D8A-3CD0-4885-8A76-FD65F15D8656}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftServe_TestProject.Tests", "tests\SoftServe_TestProject.Tests\SoftServe_TestProject.Tests.csproj", "{82CF09FC-CCF1-4A43-9FB7-54CD2620036C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +39,10 @@ Global
 		{55F0052E-19CC-4CB5-AB5D-AB55FF753F66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55F0052E-19CC-4CB5-AB5D-AB55FF753F66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55F0052E-19CC-4CB5-AB5D-AB55FF753F66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82CF09FC-CCF1-4A43-9FB7-54CD2620036C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82CF09FC-CCF1-4A43-9FB7-54CD2620036C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82CF09FC-CCF1-4A43-9FB7-54CD2620036C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82CF09FC-CCF1-4A43-9FB7-54CD2620036C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +52,7 @@ Global
 		{2211A28F-A5BC-4602-92B5-42C03C141DD8} = {4E8BBF7E-B760-4181-A2FD-84D526BF39B1}
 		{ADB08B90-1675-4438-AEDD-5C6E9EAB013B} = {4E8BBF7E-B760-4181-A2FD-84D526BF39B1}
 		{55F0052E-19CC-4CB5-AB5D-AB55FF753F66} = {4E8BBF7E-B760-4181-A2FD-84D526BF39B1}
+		{82CF09FC-CCF1-4A43-9FB7-54CD2620036C} = {D0831D8A-3CD0-4885-8A76-FD65F15D8656}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7AE988FB-4B1B-48C7-B977-65C131E594E1}

@@ -3,8 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SoftServe_TestProject.API.DTOs;
 using SoftServe_TestProject.API.Responses;
+using SoftServe_TestProject.Application.Interfaces;
 using SoftServe_TestProject.Application.Requests;
-using SoftServe_TestProject.Application.Services;
 
 namespace SoftServe_TestProject.API.Controllers
 {
@@ -12,11 +12,11 @@ namespace SoftServe_TestProject.API.Controllers
     [Route("api/students")]
     public class StudentsController : ControllerBase
     {
-        private readonly StudentService _studentService;
+        private readonly IStudentService _studentService;
         private readonly IValidator<StudentDTO> _studentValidator;
         private readonly IMapper _mapper;
 
-        public StudentsController(StudentService studentService, IValidator<StudentDTO> studentValidator, IMapper mapper)
+        public StudentsController(IStudentService studentService, IValidator<StudentDTO> studentValidator, IMapper mapper)
         {
             _studentService = studentService;
             _studentValidator = studentValidator;
