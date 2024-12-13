@@ -12,20 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { 
-        Title = "ProjectAPI", 
-        Version = "v1",
-        Description = "A .NET Core WEB API project that performs CRUD operations on Course, Student and Teacher entities."
-    });
 
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
-    options.IncludeXmlComments(xmlPath);
-});
-
+builder.Services.ConfigureSwagger();
 builder.Services.AddServices();
 builder.Services.AddValidators();
 builder.Services.AddDataAccessService(builder.Configuration);
