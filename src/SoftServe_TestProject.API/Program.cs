@@ -3,6 +3,7 @@ using SoftServe_TestProject.API.ServicesConfiguration;
 using SoftServe_TestProject.Application.ExtensionServices;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,12 @@ builder.Services.AddDataAccessService(builder.Configuration);
 builder.Services.AddMappingProfiles();
 builder.Services.AddMappingProfilesOfRequests();
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,6 +52,8 @@ if (app.Environment.IsDevelopment())
     await app.DatabaseEnsureCreated();
 }
 
+app.UseSerilogRequestLogging();
+app.UseMiddleware<RequestLogContextMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
