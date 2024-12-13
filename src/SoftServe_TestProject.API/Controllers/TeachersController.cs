@@ -23,13 +23,19 @@ namespace SoftServe_TestProject.API.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Gets the teacher by id
+        /// </summary>
+        /// <returns>The teacher entity</returns>
+        /// <response code="200">Returns the teacher entity</response>
+        /// <response code="404">The entity was not found</response>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var teacher = await _teacherService.GetTeacherByIdAsync(id);
             if (teacher == null)
             {
-                return NotFound("Teacher not found");
+                return NotFound(new { Error = "Teacher not found" } );
             }
 
             var teacherResponse = _mapper.Map<TeacherResponse>(teacher);
@@ -37,6 +43,11 @@ namespace SoftServe_TestProject.API.Controllers
             return Ok(teacherResponse);
         }
 
+        /// <summary>
+        /// Gets the list of all teachers
+        /// </summary>
+        /// <returns>The list of teachers</returns>
+        /// <response code="200">Returns the list of teachers</response>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -47,13 +58,19 @@ namespace SoftServe_TestProject.API.Controllers
             return Ok(teacherResponses);
         }
 
+        /// <summary>
+        /// Creates the new teacher
+        /// </summary>
+        /// <returns>No content</returns>
+        /// <response code="204">The teacher was successfully created</response>
+        /// <response code="400">The entity was not valid</response>
         [HttpPost]
         public async Task<IActionResult> Create(TeacherDTO teacherDTO)
         {
             var validationResult = await _teacherValidator.ValidateAsync(teacherDTO);
             if (!validationResult.IsValid)
             {
-                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                return BadRequest(new { Error = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
             var teacher = _mapper.Map<TeacherRequest>(teacherDTO);
@@ -62,6 +79,13 @@ namespace SoftServe_TestProject.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Updates the existing teacher
+        /// </summary>
+        /// <returns>No content</returns>
+        /// <response code="204">The teacher was successfully updated</response>
+        /// <response code="400">The teacher was not valid</response>
+        /// <response code="400">Id and teacher's id were different</response>
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, TeacherDTO teacherDTO)
         {
@@ -73,7 +97,7 @@ namespace SoftServe_TestProject.API.Controllers
             var validationResult = await _teacherValidator.ValidateAsync(teacherDTO);
             if (!validationResult.IsValid)
             {
-                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                return BadRequest(new { Error = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
             var teacher = _mapper.Map<TeacherRequest>(teacherDTO);
@@ -82,9 +106,21 @@ namespace SoftServe_TestProject.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes the student by id
+        /// </summary>
+        /// <returns>No content</returns>
+        /// <response code="204">The student was successfully deleted</response>
+        /// <response code="404">The entity was not found</response>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var teacher = await _teacherService.GetTeacherByIdAsync(id);
+            if (teacher == null)
+            {
+                return NotFound(new { Error = "Teacher not found" } );
+            }
+
             await _teacherService.DeleteTeacherAsync(id);
 
             return NoContent();

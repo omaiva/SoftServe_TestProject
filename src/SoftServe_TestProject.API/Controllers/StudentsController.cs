@@ -23,13 +23,19 @@ namespace SoftServe_TestProject.API.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Gets the student by id
+        /// </summary>
+        /// <returns>The student entity</returns>
+        /// <response code="200">Returns the student entity</response>
+        /// <response code="404">The entity was not found</response>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var student = await _studentService.GetStudentByIdAsync(id);
             if (student == null)
             {
-                return NotFound("Student not found.");
+                return NotFound(new { Error = "Student not found." } );
             }
 
             var studentResponse = _mapper.Map<StudentResponse>(student);
@@ -37,6 +43,11 @@ namespace SoftServe_TestProject.API.Controllers
             return Ok(studentResponse);
         }
 
+        /// <summary>
+        /// Gets the list of all students
+        /// </summary>
+        /// <returns>The list of students</returns>
+        /// <response code="200">Returns the list of students</response>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -47,13 +58,19 @@ namespace SoftServe_TestProject.API.Controllers
             return Ok(studentsResponses);
         }
 
+        /// <summary>
+        /// Creates the new student
+        /// </summary>
+        /// <returns>No content</returns>
+        /// <response code="204">The student was successfully created</response>
+        /// <response code="400">The entity was not valid</response>
         [HttpPost]
         public async Task<IActionResult> Create(StudentDTO studentDTO)
         {
             var validationResult = await _studentValidator.ValidateAsync(studentDTO);
             if (!validationResult.IsValid)
             {
-                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                return BadRequest(new { Error = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
             var student = _mapper.Map<StudentRequest>(studentDTO);
@@ -62,6 +79,13 @@ namespace SoftServe_TestProject.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Updates the existing student
+        /// </summary>
+        /// <returns>No content</returns>
+        /// <response code="204">The student was successfully updated</response>
+        /// <response code="400">The student was not valid</response>
+        /// <response code="400">Id and student's id were different</response>
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, StudentDTO studentDTO)
         {
@@ -73,7 +97,7 @@ namespace SoftServe_TestProject.API.Controllers
             var validationResult = await _studentValidator.ValidateAsync(studentDTO);
             if (!validationResult.IsValid)
             {
-                return BadRequest(new { Errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+                return BadRequest(new { Error = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
 
             var student = _mapper.Map<StudentRequest>(studentDTO);
@@ -83,9 +107,21 @@ namespace SoftServe_TestProject.API.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes the student by id
+        /// </summary>
+        /// <returns>No content</returns>
+        /// <response code="204">The student was successfully deleted</response>
+        /// <response code="404">The entity was not found</response>
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var student = await _studentService.GetStudentByIdAsync(id);
+            if (student == null)
+            {
+                return NotFound(new { Error = "Student not found." } );
+            }
+
             await _studentService.DeleteStudentAsync(id);
 
             return NoContent();
