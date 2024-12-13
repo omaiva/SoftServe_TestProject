@@ -35,7 +35,7 @@ namespace SoftServe_TestProject.API.Controllers
             var teacher = await _teacherService.GetTeacherByIdAsync(id);
             if (teacher == null)
             {
-                return NotFound(new { Error = "Teacher not found" } );
+                return NotFound(new { Error = "Teacher not found." } );
             }
 
             var teacherResponse = _mapper.Map<TeacherResponse>(teacher);
@@ -118,7 +118,7 @@ namespace SoftServe_TestProject.API.Controllers
             var teacher = await _teacherService.GetTeacherByIdAsync(id);
             if (teacher == null)
             {
-                return NotFound(new { Error = "Teacher not found" } );
+                return NotFound(new { Error = "Teacher not found." } );
             }
 
             await _teacherService.DeleteTeacherAsync(id);

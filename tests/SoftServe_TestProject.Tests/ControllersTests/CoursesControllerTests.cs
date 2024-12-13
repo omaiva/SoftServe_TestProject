@@ -5,46 +5,51 @@ using Moq;
 using SoftServe_TestProject.API.Controllers;
 using SoftServe_TestProject.API.DTOs;
 using SoftServe_TestProject.API.Responses;
-using SoftServe_TestProject.API.Validators;
 using SoftServe_TestProject.Application.Interfaces;
 using SoftServe_TestProject.Application.Requests;
 using SoftServe_TestProject.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SoftServe_TestProject.Tests.ControllersTests
 {
     [TestFixture]
-    public class StudentsControllerTests
+    public class CoursesControllerTests
     {
-        private StudentsController _studentsController;
-        private Mock<IStudentService> _studentServiceMock;
-        private Mock<IValidator<StudentDTO>> _validatorMock;
+        private CoursesController _coursesController;
+        private Mock<ICourseService> _courseServiceMock;
+        private Mock<IValidator<CourseDTO>> _validatorMock;
         private Mock<IMapper> _mapperMock;
 
         [SetUp]
         public void SetUp()
         {
-            _studentServiceMock = new Mock<IStudentService>();
+            _courseServiceMock = new Mock<ICourseService>();
             _mapperMock = new Mock<IMapper>();
-            _validatorMock = new Mock<IValidator<StudentDTO>>();
+            _validatorMock = new Mock<IValidator<CourseDTO>>();
 
-            _studentsController = new StudentsController(_studentServiceMock.Object, _validatorMock.Object, _mapperMock.Object);
+            _coursesController = new CoursesController(_courseServiceMock.Object, _validatorMock.Object, _mapperMock.Object);
         }
 
         [Test]
-        public async Task GetById_ReturnsOkWithStudentResponse_WhenStudentExisis()
+        public async Task GetById_ReturnsOkWithCourseResponse_WhenCourseExisis()
         {
-            var studentId = 1;
-            var request = new StudentRequest(studentId, "John", "Doe");
-            var response = new StudentResponse(studentId, "John", "Doe");
+            var courseId = 1;
+            var teacherId = 1;
+            var request = new CourseRequest(courseId, "Math", "Math course", teacherId);
+            var response = new CourseResponse(courseId, "Math", "Math course", teacherId);
 
-            _studentServiceMock
-                .Setup(s => s.GetStudentByIdAsync(studentId))
+            _courseServiceMock
+                .Setup(s => s.GetCourseByIdAsync(courseId))
                 .ReturnsAsync(request);
             _mapperMock
-                .Setup(m => m.Map<StudentResponse>(request))
+                .Setup(m => m.Map<CourseResponse>(request))
                 .Returns(response);
 
-            var result = await _studentsController.GetById(studentId);
+            var result = await _coursesController.GetById(courseId);
 
             var okResult = result as OkObjectResult;
             Assert.NotNull(okResult);
@@ -53,16 +58,16 @@ namespace SoftServe_TestProject.Tests.ControllersTests
         }
 
         [Test]
-        public async Task GetById_ReturnsNotFoundWithError_WhenStudentDoesNotExist()
+        public async Task GetById_ReturnsNotFoundWithError_WhenCourseDoesNotExist()
         {
-            var studentId = 1;
-            StudentRequest? request = null;
+            var courseId = 1;
+            CourseRequest? request = null;
 
-            _studentServiceMock
-                .Setup(s => s.GetStudentByIdAsync(studentId))
+            _courseServiceMock
+                .Setup(s => s.GetCourseByIdAsync(courseId))
                 .ReturnsAsync(request);
 
-            var result = await _studentsController.GetById(studentId);
+            var result = await _coursesController.GetById(courseId);
 
             var notFoundResult = result as NotFoundObjectResult;
             Assert.NotNull(notFoundResult);
@@ -72,31 +77,31 @@ namespace SoftServe_TestProject.Tests.ControllersTests
             Assert.NotNull(value);
 
             var error = value.GetType().GetProperty("Error")?.GetValue(value)?.ToString();
-            Assert.That(error, Is.EqualTo("Student not found."));
+            Assert.That(error, Is.EqualTo("Course not found."));
         }
 
         [Test]
-        public async Task GetAll_ReturnsOkWithListOfStudents_WhenStudentsExist()
+        public async Task GetAll_ReturnsOkWithListOfCourses_WhenCoursesExist()
         {
-            var request = new List<StudentRequest>
+            var request = new List<CourseRequest>
             {
-                new StudentRequest(1, "John", "Doe"),
-                new StudentRequest(2, "Jane", "Doe")
+                new CourseRequest(1, "Math", "Math course", 1),
+                new CourseRequest(2, "English", "English course", 2)
             };
-            var response = new List<StudentResponse>
+            var response = new List<CourseResponse>
             {
-                new StudentResponse(1, "John", "Doe"),
-                new StudentResponse(2, "Jane", "Doe")
+                new CourseResponse(1, "Math", "Math course", 1),
+                new CourseResponse(2, "English", "English course", 2)
             };
 
-            _studentServiceMock
-                .Setup(s => s.GetAllStudentsAsync())
+            _courseServiceMock
+                .Setup(s => s.GetAllCoursesAsync())
                 .ReturnsAsync(request);
             _mapperMock
-                .Setup(m => m.Map<IEnumerable<StudentResponse>>(request))
+                .Setup(m => m.Map<IEnumerable<CourseResponse>>(request))
                 .Returns(response);
 
-            var result = await _studentsController.GetAll();
+            var result = await _coursesController.GetAll();
 
             var okResult = result as OkObjectResult;
             Assert.NotNull(okResult);
@@ -105,19 +110,19 @@ namespace SoftServe_TestProject.Tests.ControllersTests
         }
 
         [Test]
-        public async Task GetAll_ReturnsOkWithNull_WhenStudentsDoNotExist()
+        public async Task GetAll_ReturnsOkWithNull_WhenCoursesDoNotExist()
         {
-            List<StudentRequest> request = [];
-            List<StudentResponse> response = [];
+            List<CourseRequest> request = [];
+            List<CourseResponse> response = [];
 
-            _studentServiceMock
-                .Setup(s => s.GetAllStudentsAsync())
+            _courseServiceMock
+                .Setup(s => s.GetAllCoursesAsync())
                 .ReturnsAsync(request);
             _mapperMock
-                .Setup(m => m.Map<IEnumerable<StudentResponse>>(request))
+                .Setup(m => m.Map<IEnumerable<CourseResponse>>(request))
                 .Returns(response);
 
-            var result = await _studentsController.GetAll();
+            var result = await _coursesController.GetAll();
 
             var okResult = result as OkObjectResult;
             Assert.NotNull(okResult);
@@ -126,23 +131,24 @@ namespace SoftServe_TestProject.Tests.ControllersTests
         }
 
         [Test]
-        public async Task Create_ReturnsNoContent_WhenStudentCreated()
+        public async Task Create_ReturnsNoContent_WhenCourseCreated()
         {
-            var studentId = 1;
-            var DTO = new StudentDTO(studentId, "John", "Doe");
-            var request = new StudentRequest(studentId, "John", "Doe");
+            var courseId = 1;
+            var teacherId = 1;
+            var DTO = new CourseDTO(courseId, "Math", "Math course", teacherId);
+            var request = new CourseRequest(courseId, "Math", "Math course", teacherId);
 
-            _studentServiceMock
-                .Setup(s => s.CreateStudentAsync(request))
+            _courseServiceMock
+                .Setup(s => s.CreateCourseAsync(request))
                 .Returns(Task.CompletedTask);
             _validatorMock
                 .Setup(v => v.ValidateAsync(DTO, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
             _mapperMock
-                .Setup(m => m.Map<StudentRequest>(DTO))
+                .Setup(m => m.Map<CourseRequest>(DTO))
                 .Returns(request);
 
-            var result = await _studentsController.Create(DTO);
+            var result = await _coursesController.Create(DTO);
 
             var noContentResult = result as NoContentResult;
             Assert.NotNull(noContentResult);
@@ -152,17 +158,17 @@ namespace SoftServe_TestProject.Tests.ControllersTests
         [Test]
         public async Task Create_ReturnsBadRequestWithError_WhenEntityIsNotValid()
         {
-            var DTO = new StudentDTO(1, "That parameter is longer than 20 symbols.", "Doe");
+            var DTO = new CourseDTO(1, "That parameter is longer than 20 symbols.", "Math course", 1);
             var validationErrors = new List<FluentValidation.Results.ValidationFailure>()
             {
-                new FluentValidation.Results.ValidationFailure("FirstName", "That parameter is longer than 20 symbols.")
+                new FluentValidation.Results.ValidationFailure("Title", "That parameter is longer than 20 symbols.")
             };
 
             _validatorMock
                 .Setup(v => v.ValidateAsync(DTO, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
 
-            var result = await _studentsController.Create(DTO);
+            var result = await _coursesController.Create(DTO);
 
             var badRequestResult = result as BadRequestObjectResult;
             Assert.NotNull(badRequestResult);
@@ -170,29 +176,30 @@ namespace SoftServe_TestProject.Tests.ControllersTests
 
             var value = badRequestResult.Value;
             Assert.NotNull(value);
-            
+
             var errors = value.GetType().GetProperty("Error")?.GetValue(value);
             Assert.That(errors, Is.EqualTo(validationErrors.Select(e => e.ErrorMessage).ToList()));
         }
 
         [Test]
-        public async Task Update_ReturnsNoContent_WhenStudentIsUpdated()
+        public async Task Update_ReturnsNoContent_WhenCourseIsUpdated()
         {
-            var studentId = 1;
-            var DTO = new StudentDTO(studentId, "John", "Doe");
-            var request = new StudentRequest(studentId, "John", "Doe");
+            var courseId = 1;
+            var teacherId = 1;
+            var DTO = new CourseDTO(courseId, "Math", "Math course", teacherId);
+            var request = new CourseRequest(courseId, "Math", "Math course", teacherId);
 
-            _studentServiceMock
-                .Setup(s => s.UpdateStudentAsync(request))
+            _courseServiceMock
+                .Setup(s => s.UpdateCourseAsync(request))
                 .Returns(Task.CompletedTask);
             _validatorMock
                 .Setup(v => v.ValidateAsync(DTO, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult());
             _mapperMock
-                .Setup(m => m.Map<StudentRequest>(DTO))
+                .Setup(m => m.Map<CourseRequest>(DTO))
                 .Returns(request);
 
-            var result = await _studentsController.Update(studentId, DTO);
+            var result = await _coursesController.Update(courseId, DTO);
 
             var noContentResult = result as NoContentResult;
             Assert.NotNull(noContentResult);
@@ -202,8 +209,9 @@ namespace SoftServe_TestProject.Tests.ControllersTests
         [Test]
         public async Task Update_ReturnsBadRequestWithError_WhenEntityIsNotValid()
         {
-            var studentId = 1;
-            var DTO = new StudentDTO(studentId, "That parameter is longer than 20 symbols.", "Doe");
+            var courseId = 1;
+            var teacherId = 1;
+            var DTO = new CourseDTO(courseId, "That parameter is longer than 20 symbols.", "Math course", teacherId);
             var validationErrors = new List<FluentValidation.Results.ValidationFailure>()
             {
                 new FluentValidation.Results.ValidationFailure("FirstName", "That parameter is longer than 20 symbols.")
@@ -213,7 +221,7 @@ namespace SoftServe_TestProject.Tests.ControllersTests
                 .Setup(v => v.ValidateAsync(DTO, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FluentValidation.Results.ValidationResult(validationErrors));
 
-            var result = await _studentsController.Update(studentId, DTO);
+            var result = await _coursesController.Update(courseId, DTO);
 
             var badRequestResult = result as BadRequestObjectResult;
             Assert.NotNull(badRequestResult);
@@ -229,10 +237,10 @@ namespace SoftServe_TestProject.Tests.ControllersTests
         [Test]
         public async Task Update_ReturnsBadRequestWithError_WhenIdsAreEqual()
         {
-            var studentId = 2;
-            var DTO = new StudentDTO(1, "John.", "Doe");
+            var courseId = 2;
+            var DTO = new CourseDTO(1, "Math", "Math course", 1);
 
-            var result = await _studentsController.Update(studentId, DTO);
+            var result = await _coursesController.Update(courseId, DTO);
 
             var badRequestResult = result as BadRequestObjectResult;
             Assert.NotNull(badRequestResult);
@@ -242,23 +250,24 @@ namespace SoftServe_TestProject.Tests.ControllersTests
             Assert.NotNull(value);
 
             var error = value.GetType().GetProperty("Error")?.GetValue(value)?.ToString();
-            Assert.That(error, Is.EqualTo("Id and student Id are different."));
+            Assert.That(error, Is.EqualTo("Id and course Id are different."));
         }
 
         [Test]
-        public async Task Delete_ReturnsNoContent_WhenStudentIsDeleted()
+        public async Task Delete_ReturnsNoContent_WhenCourseIsDeleted()
         {
-            var studentId = 1;
-            var request = new StudentRequest(studentId, "John", "Doe");
+            var courseId = 1;
+            var teacherId = 1;
+            var request = new CourseRequest(courseId, "Math", "Math course", teacherId);
 
-            _studentServiceMock
-                .Setup(s => s.GetStudentByIdAsync(studentId))
+            _courseServiceMock
+                .Setup(s => s.GetCourseByIdAsync(courseId))
                 .ReturnsAsync(request);
-            _studentServiceMock
-                .Setup(s => s.DeleteStudentAsync(studentId))
+            _courseServiceMock
+                .Setup(s => s.DeleteCourseAsync(courseId))
                 .Returns(Task.CompletedTask);
 
-            var result = await _studentsController.Delete(studentId);
+            var result = await _coursesController.Delete(courseId);
 
             var noContentResult = result as NoContentResult;
             Assert.NotNull(noContentResult);
@@ -266,16 +275,16 @@ namespace SoftServe_TestProject.Tests.ControllersTests
         }
 
         [Test]
-        public async Task Delete_ReturnsNotFoundWithError_WhenStudentDoesNotExist()
+        public async Task Delete_ReturnsNotFoundWithError_WhenCourseDoesNotExist()
         {
             var studentId = 1;
-            StudentRequest? request = null;
+            CourseRequest? request = null;
 
-            _studentServiceMock
-                .Setup(s => s.GetStudentByIdAsync(studentId))
+            _courseServiceMock
+                .Setup(s => s.GetCourseByIdAsync(studentId))
                 .ReturnsAsync(request);
 
-            var result = await _studentsController.Delete(studentId);
+            var result = await _coursesController.Delete(studentId);
 
             var notFoundResult = result as NotFoundObjectResult;
             Assert.NotNull(notFoundResult);
@@ -285,7 +294,7 @@ namespace SoftServe_TestProject.Tests.ControllersTests
             Assert.NotNull(value);
 
             var error = value.GetType().GetProperty("Error")?.GetValue(value)?.ToString();
-            Assert.That(error, Is.EqualTo("Student not found."));
+            Assert.That(error, Is.EqualTo("Course not found."));
         }
     }
 }
