@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
+using SoftServe_TestProject.Application.Interfaces;
 using SoftServe_TestProject.Application.Requests;
 using SoftServe_TestProject.Domain.Entities;
 using SoftServe_TestProject.Domain.Interfaces;
 
 namespace SoftServe_TestProject.Application.Services
 {
-    public class StudentService
+    public class StudentService : IStudentService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
